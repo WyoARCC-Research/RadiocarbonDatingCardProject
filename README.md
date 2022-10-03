@@ -14,7 +14,7 @@ List of packages used:
 - pyTesseract
   - used as OCR for extra scripts, such as getLocation.py
   
-* The PDFs of the cards already had OCR run on them via ABBYY. This package conveniently "copy and pasted" the text from that OCR into a text file, with all of the items conveniently separated into their own lines.
+\* The PDFs of the cards already had OCR run on them via ABBYY. This package conveniently "copy and pasted" the text from that OCR into a text file, with all of the items conveniently separated into their own lines.
   
 The order these scripts ran in goes as follows
 1) multicard_read.py
