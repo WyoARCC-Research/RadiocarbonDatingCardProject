@@ -1,3 +1,5 @@
+#Written by Carver Bray
+
 #import regular expressions, which are used a lot in this script
 import re
 
@@ -295,6 +297,7 @@ dataList = [
     'latLong',
     'typeOfDate',
     'siteName',
+    'context',
     'references'
 ]
 
@@ -330,11 +333,11 @@ latitude = ""
 longitude = ""
 typeOfDate = ""
 siteName = ""
+context = ""
 references = ""
 
 #These dictionaries are used to keep track of errors.
 #Most commonly errors where a piece of data simply isn't found
-#
 locationDict = {}
 materialDatedDict = {}
 labNameDict = {}
@@ -343,6 +346,7 @@ ageDict = {}
 latLongDict = {}
 typeOfDateDict = {}
 siteNameDict = {}
+contextDict = {}
 referencesDict = {}
 #This dictionary is specifically for latLong lines
 #where the OCR screwed up and put letters or symbols
@@ -374,7 +378,6 @@ materialInLabNameList = [
 validAgeSearchList = [
     '±',
     '+',
-    #'i',
     '>',
     '<',
     '^',
@@ -453,6 +456,7 @@ for subDir, dirs, files in os.walk(sourceDir):
             lastDataRemoved = ""
             locationCounter = 0
             referenceCounter = 0
+            contextBegin = 0
             skipPop = 0
             dataList = [
             'location',
@@ -463,6 +467,7 @@ for subDir, dirs, files in os.walk(sourceDir):
             'latLong',
             'typeOfDate',
             'siteName',
+            'context',
             'references'
             ]
 
@@ -479,6 +484,7 @@ for subDir, dirs, files in os.walk(sourceDir):
             longitude = ""
             typeOfDate = ""
             siteName = ""
+            context = ""
             references = ""
 
             if file.endswith(".txt"):
@@ -519,11 +525,11 @@ for subDir, dirs, files in os.walk(sourceDir):
                         #These are where we check for them. For now we check for age lines
                         #that have "A.D." or "B.C.", we also check for "liquid scintilation"
                         #which kept getting put into the location. We don't want that
-                        if re.search('(A *\. *D *\.)|(B *\. *C *\.)|(liquid scin)', line):
+                        if re.search('(A *\. *D *\.)|(B *\. *C *\.)', line):
                             continue
                         #If I remember correctly these are extra info for certain fields that aren't
                         #necessary, so we just skip em'
-                        elif 'corrected' in line.lower() or 'solid carbon' in line.lower():
+                        elif 'corrected' in line.lower():
                             skipPop = 1
                             continue
                         
@@ -675,12 +681,12 @@ for subDir, dirs, files in os.walk(sourceDir):
                                 if ";" in line:
                                     siteName, uselessForNow = line.split(';', 1)
                                 if siteName.lower() in materialList:
-                                    siteName = "Material In Place Of Identifier"
+                                    siteName = "Material In Place Of Site Name"
                                 dataList.remove('siteName')
                                 dataList.remove('location')
-                                continue
                         if re.search('(volume)|(pg)|(p\.)|(radiocarbon)|(journal)|(press)', trimLine):
                             if "references" in dataList:
+                                contextBegin = 0
                                 if re.search('inc', trimLine):
                                     continue
                                 references += line + "; "
@@ -689,7 +695,20 @@ for subDir, dirs, files in os.walk(sourceDir):
                                     dataList.remove("references")
                                     lastDataRemoved = "references"
                                 continue
-
+                        
+                        #If certain keywords show up we should start grabbing context
+                        if re.search("(solid carbon)|(gas pro)|(gas ge)|(liquid scin)", lowerLine):
+                            contextBegin = 1
+                            continue
+                        
+                        #If the dataList only has four items left
+                        #namely, location, siteName, context, and references
+                        #then we should start shoving things into context
+                        if len(dataList) == 4 or len(dataList) == 3 or contextBegin == 1:
+                            strippedLine = line.rstrip('\n')
+                            context += strippedLine + " "
+                            continue
+                        
                         #If the last dataList entry is removed we 
                         #should stop reading through the file
                         if not dataList:
@@ -749,6 +768,8 @@ for subDir, dirs, files in os.walk(sourceDir):
                 cannotUploadList[file] = "Unsupported Date Type, " + typeOfDate
             if siteName == "":
                 siteNameDict[file] = ""
+            if context == "":
+                contextDict[file] = ""
             if references == "":
                 referencesDict[file] = ""
 
@@ -764,6 +785,7 @@ for subDir, dirs, files in os.walk(sourceDir):
             orgOutputFile.write("\nLongitude: " + longitude)
             orgOutputFile.write("\n\nType Of Date: " + typeOfDate)
             orgOutputFile.write("\n\nSite Name: " + siteName)
+            orgOutputFile.write("\n\nContext: " + context)
             orgOutputFile.write("\n\nReferences: " + references)
             orgOutputFile.close()
             readFile.close()
@@ -814,6 +836,7 @@ print("Age Errors:", len(ageDict))
 print("Lat/Long Errors:", len(latLongDict))
 print("Type Of Date Errors:", len(typeOfDateDict))
 print("Site Name Errors:", len(siteNameDict))
+print("Context Errors: ", len(contextDict))
 print("References Errors: ", len(referencesDict))
 
 #Begin printing out the content of each error list
@@ -825,7 +848,7 @@ writeToOutput(materialDatedDict, "Material Dated", fileCounter)
 writeToOutput(ageDict, "Age", fileCounter)
 writeToOutput(latLongDict, "Lat/Long", fileCounter)
 writeToOutput(typeOfDateDict, "Type Of Date", fileCounter)
-writeToOutput(siteNameDict, "Site Name", fileCounter)
+writeToOutput(contextDict, "Context", fileCounter)
 writeToOutput(referencesDict, "References", fileCounter)
 
 print("\n\n" + str(len(cannotUploadList))+" FILES CANNOT BE UPLOADED DUE TO DATABASE CONFLICTS :(")
