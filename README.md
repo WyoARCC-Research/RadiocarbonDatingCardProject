@@ -4,7 +4,7 @@ This collection of scripts is meant to take old radiocarbon dating cards dated f
 
 All of these were written in python.
 
-Further explanation of certain aspects of the project can be found in this link https://arcc-collab.atlassian.net/l/cp/Sm4uaXbf
+Further explanation of certain aspects of the project can be found in this link https://arcc-collab.atlassian.net/l/cp/qUndMoV0
 
 List of packages used:
 - pdfminer.six
