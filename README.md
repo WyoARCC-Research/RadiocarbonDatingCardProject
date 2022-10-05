@@ -18,8 +18,9 @@ List of packages used:
   
 The order these scripts ran in goes as follows
 1) multicard_read.py
-2) organize_text.py
-3) compareOldNewOutput.py
-4) compareLocations.py
-5) translate_to_spreadsheet.py
-6) check_spreadsheet.py
+2) getLocation.py
+3) organize_text.py
+4) compareOldNewOutput.py
+5) compareLocations.py
+6) translate_to_spreadsheet.py
+7) check_spreadsheet.py
