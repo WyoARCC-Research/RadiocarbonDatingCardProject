@@ -122,8 +122,8 @@ def assignTypeOfDate(text):
     text = text.replace(' ', '')
     if re.search('(geo[^r])|(oceanogra)', text.lower()):
         return "geological"
-    elif re.search('(archaeology)|(paleontology)', text.lower()):
-        return re.search('(archaeology)|(paleontology)', text.lower()).group()
+    elif re.search('(archae)|(paleo)', text.lower()):
+        return re.search('(archae)|(paleo)', text.lower()).group()
     if re.search('(misc)|(gaspropor)|(ethno)|(atmo)', text.lower()):
         return "CANNOT UPLOAD " + text
     if "pollen dated" in text.lower() or "pollen-dated" in text.lower() or "pollen" in text.lower() or "dated" in text.lower():
@@ -507,7 +507,7 @@ for subDir, dirs, files in os.walk(sourceDir):
 
                             #The script should stop either when the dataList has all 
                             #of its items removed, or too many lines have been read in
-                            if len(dataList) == 0 or itemCounter == 12:
+                            if len(dataList) == 0 or itemCounter == 15:
                                 break
                             continue
                         #If we have a bad read, we just skip past that line
@@ -664,7 +664,7 @@ for subDir, dirs, files in os.walk(sourceDir):
                                     dataList.remove('latLong')
                                     lastDataRemoved = 'latLong'
                                 continue
-                        if re.search('(geo[^r])|(archaeology)|(paleontology)|(oceano)|(misc)|(gaspropor)|(ethno)|(atmo)', trimLine):
+                        if re.search('(geo[^r])|(archae)|(paleo)|(oceano)|(misc)|(gaspropor)|(ethno)|(atmo)', trimLine):
                             if 'typeOfDate' in dataList:
                                 typeOfDate = assignTypeOfDate(line)
                                 if typeOfDate == "N/A":
@@ -704,7 +704,7 @@ for subDir, dirs, files in os.walk(sourceDir):
                         #If the dataList only has four items left
                         #namely, location, siteName, context, and references
                         #then we should start shoving things into context
-                        if len(dataList) == 4 or len(dataList) == 3 or contextBegin == 1:
+                        if contextBegin == 1 or (len(dataList) == 4 or len(dataList) == 3):
                             strippedLine = line.rstrip('\n')
                             context += strippedLine + " "
                             continue
@@ -801,7 +801,8 @@ listOfDicts = [
     labNumberDict,
     ageDict,
     latLongDict,
-    typeOfDateDict
+    typeOfDateDict,
+    contextDict
 ]
 
 listOfImportantDicts = [
